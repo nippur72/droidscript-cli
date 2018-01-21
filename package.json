@@ -1,0 +1,14 @@
+{
+  "name": "droidscript-cli",
+  "version": "0.0.1",
+  "description": "DroidScript command line utility",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "droidscript"
+  ],
+  "author": "Antonino Porcino <nino.porcino@gmail.com>",
+  "license": "MIT"
+}
