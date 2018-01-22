@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>IDE Test</title>
+
+<script>
+
+//Get useful info from phone.
+function GetInfo()
+{
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=getinfo", true );
+	xmlHttp.send();
+}
+
+//Add a new program to IDE.
+function AddProgram( type )
+{
+	//Get program title from text box.
+	var name = txtAdd.value;
+
+	//Send 'Add' command to phone.
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	if( type=="html" ) xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=add&prog="+name+"&type=html", true );
+	else xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=add&prog="+name, true );
+	xmlHttp.send();
+}
+
+//Run an existing IDE program.
+function RunProgram()
+{
+	//Get program title.
+	var name = btnMain.value;
+	name = name.substring(name.lastIndexOf("\\")+1);
+	name = name.replace(".js","");
+
+	//Send 'Run' command to phone.
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=run&prog="+name, true );
+	xmlHttp.send();
+}
+
+//Stop the current program.
+function StopProgram()
+{
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=stop", true );
+	xmlHttp.send();
+}
+
+//Rename a file (or folder).
+//eg. img/mypic.png -> img/mypic2.png
+//eg. myprog.js -> myprog2.js
+function RenameFile()
+{
+	//Get old and new name from text box.
+	var file = txtOld.value;
+	var newname = txtNew.value;
+
+	//Send 'Rename' command to phone.
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=rename&file="+file+"&newname="+newname, true );
+	xmlHttp.send();
+}
+
+//Delete a file.
+//eg. img/mypic.png
+//Note: '..' in file name is not allowed!
+function DeleteFile()
+{
+	//Get name from text box.
+	var file = txtFile.value;
+
+	//Send 'Delete' command to phone.
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert(xmlHttp.responseText); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=delete&file="+file, true );
+	xmlHttp.send();
+}
+
+//List asset files in given subfolder.
+function ListFiles( subdir )
+{
+	xmlHttp = new XMLHttpRequest();
+	//if( subdir=="img" ) xmlHttp.onload = ShowFiles;
+	//else 
+	xmlHttp.onload = function() { alert( xmlHttp.responseText ); }
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=list&dir=" + subdir, true );
+	xmlHttp.send();
+}
+
+//Show listed files in browser.
+function ShowFiles()
+{
+	var html = "";
+	var files = JSON.parse(xmlHttp.responseText).list; 
+	//alert( files );
+	for( i=0; i<files.length; i++ )
+	{
+		html += "<img width=64 src=\"http://192.168.1.121:8088/img/"+files[i]+"\">";
+	}
+	divImg.innerHTML = html;
+}
+
+//Get a file/asset from phone.
+//(Only assets or paths below /sdcard/AndroidScript/ are allowed)
+function GetFile( file )
+{
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert( JSON.parse(xmlHttp.responseText).file ); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=get&file="+file, true );
+	xmlHttp.send();
+}
+
+//Get a list of all samples.
+function GetSamples()
+{
+	xmlHttp = new XMLHttpRequest();
+	xmlHttp.onload = function() { alert( xmlHttp.responseText ); };
+	xmlHttp.open( "get", "http://192.168.1.121:8088/ide?cmd=getsamples", true );
+	xmlHttp.send();
+}
+
+
+//Connect to debug output via web sockets.
+function StartDebug()
+{
+	//Check web sockets are supported.
+	if (!window.WebSocket) {
+		alert("WebSocket not supported by this browser");
+		return;
+	}
+	//Open web socket to phone.
+	ws = new WebSocket( "ws://192.168.1.121:8088/" );
+	ws.onopen = ws_onopen;
+	ws.onmessage = ws_onmessage;
+	ws.onclose = ws_onclose;
+	ws.onerror = ws_onerror;
+}
+
+//Handle socket open.
+function ws_onopen() 
+{
+	//Ask phone for debug stream.
+	dbgData = "";
+	ws.send( "debug" );
+}
+
+//Handle messages (debug) from phone.
+function ws_onmessage( msg ) 
+{
+	dbgData += msg.data + "<br>";
+	divDbg.innerHTML = dbgData;
+}
+
+//Other websocket callbacks.
+
+function ws_onclose() {  }
+function ws_onerror(e) { alert(e.data); }
+
+</script>
+</head>
+
+<body>
+<h1>AndroidScript IDE test harness</h1>
+ 
+<form action="http://192.168.1.121:8088/uploader" method="post" enctype="multipart/form-data">
+ 
+ <br><br>
+
+<table>
+    <tbody>
+        <tr>
+            <td>Main Script<input id="btnMain" type="file" name="hello" /></td>
+        </tr>
+		<tr>
+            <td>Image 1<input type="file" name="hello/Img" /></td>
+        </tr>
+		<tr>
+            <td>Image 2<input type="file" name="hello/Img" /></td>
+        </tr>
+		<tr>
+            <td>Sound<input type="file" name="hello/Snd" /></td>
+        </tr>
+		<tr>
+            <td>Html<input type="file" name="hello/Html" /></td>
+        </tr>
+        <tr>
+            <td>
+				<br>
+                 <input type="submit" value="Submit" /><input type="reset" value="Reset" />
+            </td>
+        </tr>
+    </tbody>
+</table>
+ 
+</form>
+  <button onclick="RunProgram()">Run Uploaded Program</button>
+  <button onclick="StopProgram()">Stop Current Program</button>
+  
+  <button onclick="AddProgram('')">Add New JavaScript Program</button> 
+  <button onclick="AddProgram('html')">Add New Html Program</button> 
+  <input id="txtAdd" type='text' size='24'>
+  <br>
+  <button onclick="RenameFile()">Rename File</button> 
+  <input id="txtOld" type='text' size='24'><input id="txtNew" type='text' size='24'>
+  <br>
+  <button onclick="DeleteFile()">Delete File</button><input id="txtFile" type='text' size='24'>
+  <br>
+    <button onclick="GetSamples()">Get Samples</button>
+  <br>
+  <button onclick="GetFile( txtAsset.value )">Get Sample</button><input id="txtAsset" type='text' size='24' value='/assets/samples/Template.js'>
+  <br>
+  <button onclick="GetFile( txtGet.value )">Get File</button><input id="txtGet" type='text' size='24' value='Hello World/Hello World.js'>
+  
+ <br><br>
+
+ <img src="http://192.168.1.121:8088/hello world/hello world.png">
+ <br>
+ <a href="http://192.168.1.121:8088/hello world/">Standard Directory Listing</a>
+ <br><br>
+  <button onclick="GetInfo()">Get Info</button>
+  <button onclick="ListFiles('')">List Script Files</button>
+  <button onclick="ListFiles('snd')">List Sound Files</button>
+ <button onclick="ListFiles('img')">List Image Files</button>
+ <button onclick="StartDebug()">Start Debug</button>
+ <br>
+ <div id="divImg"></div>
+ <div id="divDbg"></div>
+</body>
+</html>

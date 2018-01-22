@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "DroidScript command line utility",
   "main": "index.js",
+  "bin": {
+    "dro": "./exec"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,5 +13,14 @@
     "droidscript"
   ],
   "author": "Antonino Porcino <nino.porcino@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/node-fetch": "^1.6.7",
+    "@types/request": "^2.0.12",
+    "@types/ws": "^4.0.0",
+    "chalk": "^2.3.0",
+    "node-fetch": "^1.7.3",
+    "optionator": "^0.8.2",
+    "ws": "^4.0.0"
+  }
 }
